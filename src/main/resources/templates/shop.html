@@ -32,7 +32,7 @@
         <header>
             <div class="navbar navbar-dark bg-dark shadow-sm">
                 <div class="container">
-                    <a href="#" class="navbar-brand d-flex align-items-center">
+                    <a href="/shop" class="navbar-brand d-flex align-items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
                              class="me-2"
                              viewBox="0 0 16 16">
@@ -41,8 +41,8 @@
 
                         <strong>Books</strong>
                     </a>
-                    <a href="/checkout" class="text-white bg-primary p-2 cta-checkout" type="button">
-                        Checkout Now
+                    <a href="/cart" class="text-white bg-primary p-2 cta-checkout" type="button">
+                        My Cart
                     </a>
                 </div>
             </div>
@@ -60,6 +60,14 @@
                                         class="form-control"
                                         placeholder="Search by title"
                                         th:value="${search}"/>
+                                <input
+                                        type="hidden"
+                                        name="sort"
+                                        th:value="${sort}"/>
+                                <input
+                                        type="hidden"
+                                        name="limit"
+                                        th:value="${limit}"/>
                                 <input type="submit" class="btn btn-outline-secondary"/>
                             </div>
                         </form>
@@ -78,27 +86,32 @@
                                         class="form-select"
                                 >
                                     <option value="" disabled>--Select--</option>
-                                    <option value="bookId" selected>Book ID</option>
-                                    <option value="title">Title</option>
-                                    <option value="authors">Authors</option>
-                                    <option value="price">Price</option>
-                                    <option value="averageRating">Rating</option>
+                                    <option th:each="i : ${options_sort}" th:value="${i.key}" th:text="${i.value}"
+                                            th:selected="${i.key==sort}"></option>
                                 </select>
                             </label>
-                            <label for="page-size" class="form-label float-end">Page Size
+                            <label for="limit" class="form-label float-end">Page Size
                                 <select
-                                        id="page-size"
-                                        name="sort"
+                                        id="limit"
+                                        name="limit"
                                         class="form-select"
                                 >
                                     <option value="" disabled>--Select--</option>
-                                    <option value="10" selected>10</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
-                                    <option value="all">All</option>
+                                    <option th:each="i : ${options_page}" th:value="${i.key}" th:text="${i.value}"
+                                            th:selected="${i.key==limit}"></option>
                                 </select>
                             </label>
                             <!--                            <p class="text-muted float-end">Showing <strong th:text="${books.size()}">0</strong> books</p>-->
+                        </div>
+                    </div>
+
+                    <div class="row" th:if="${books.empty}">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <p class="card-text">
+                                    No books matched.
+                                </p>
+                            </div>
                         </div>
                     </div>
 
@@ -119,13 +132,15 @@
                                     <div class="d-flex justify-content-between align-items-center">
                                         <small class="text-muted" th:text="${'$' + book.price}"></small>
                                         <div class="btn-group">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary">Add to Cart
+                                            <button class="btn btn-sm btn-outline-secondary add-to-cart" th:attr="data-bookId=${book.bookId}">Add to Cart
                                             </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+
                     </div>
                 </div>
             </div>
@@ -139,7 +154,7 @@
             </div>
         </footer>
 
-        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"
                 integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW"
@@ -149,11 +164,35 @@
 			$(function () {
 				console.log("document loaded");
 				$("#sort").on("change", function () {
-					alert(this.value);
-					// window.location.sort = this.value;
 					var queryParams = new URLSearchParams(window.location.search);
 					queryParams.set("sort", this.value);
-					history.pushState(null, null, "?" + queryParams.toString())
+					history.pushState(null, null, "?" + queryParams.toString());
+					window.location.reload();
+				});
+
+				$("#limit").on("change", function () {
+					var queryParams = new URLSearchParams(window.location.search);
+					queryParams.set("limit", this.value);
+					history.pushState(null, null, "?" + queryParams.toString());
+					window.location.reload();
+				});
+
+				$(".add-to-cart").on("click", function () {
+					let bookId = this.getAttribute("data-bookId");
+					let data = {"bookId": bookId};
+					$.ajax({
+						type: 'PUT',
+						url: '/rest/cart',
+						contentType: 'application/json',
+						// data: JSON.stringify(data), // access in body
+						data: bookId
+					}).done(function () {
+						console.log('SUCCESS');
+					}).fail(function (msg) {
+						console.log('FAIL');
+					}).always(function (msg) {
+						console.log('ALWAYS');
+					});
 				});
 			});
         </script>

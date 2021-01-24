@@ -1,6 +1,8 @@
 package com.example.bookapp.models;
 
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -30,6 +32,7 @@ public class CartItem implements Serializable {
     private Long cartId;
     
     @Column(name = "createdAt", nullable = false)
+    @CreationTimestamp
     private LocalDateTime createdAt;
     
     @Column(name = "price", nullable = false)
@@ -42,6 +45,7 @@ public class CartItem implements Serializable {
     private Integer quantity = 0;
     
     @Column(name = "updatedAt")
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
     
 }
