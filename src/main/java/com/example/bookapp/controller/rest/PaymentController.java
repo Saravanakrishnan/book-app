@@ -26,7 +26,7 @@ public class PaymentController {
     @Autowired
     CartRepository cartRepository;
     
-    @Value("DOMAIN_BASE_URL:https://sk-book-app.herokuapp.com/")
+    @Value("${DOMAIN_BASE_URL:https://sk-book-app.herokuapp.com/}")
     private String domainBaseUrl;
     
     @Autowired
