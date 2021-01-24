@@ -29,8 +29,8 @@
 ![Payment page 3](screenshots/page-5.png)
 
 6. Payment Completed
-![Home page](screenshots/page-6.png)
+![Payment Completion page](screenshots/page-6.png)
 
 7. Order completion Page 
-![Home page](screenshots/page-7.png)
+![Order completion page](screenshots/page-7.png)
 
