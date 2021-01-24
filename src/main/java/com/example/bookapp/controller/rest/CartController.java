@@ -7,7 +7,6 @@ import com.example.bookapp.repo.CartItemRepository;
 import com.example.bookapp.repo.CartRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,20 +29,6 @@ public class CartController {
     
     @Autowired
     BookRepository bookRepository;
-    
-    @GetMapping({"", "/"})
-    public Cart getCart(HttpSession session) {
-        
-        Cart cart = null;
-        try {
-            String cartId = (String) session.getAttribute(SESSION_CART_KEY);
-            cart = cartRepository.findBySessionId(cartId);
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return cart;
-    }
     
     @PutMapping({"", "/"})
     public void addToCart(@RequestBody Long bookId, HttpSession session) {
@@ -116,13 +101,13 @@ public class CartController {
     }
     
     private Cart getSavedCart(HttpSession session) {
-        return Optional.ofNullable(cartRepository.findBySessionId(session.getId()))
+        return Optional.ofNullable(cartRepository.findBySessionIdAndStatus(session.getId(), 0))
                 .orElseGet(() -> {
                     Cart cart = new Cart();
                     cart.setEmail("");
                     cart.setMobile("");
                     cart.setToken("");
-                    cart.setStatus(1);
+                    cart.setStatus(0); // not completed
                     
                     cart.setSessionId(session.getId());
                     return cartRepository.save(cart);

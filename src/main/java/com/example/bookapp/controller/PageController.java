@@ -1,11 +1,10 @@
 package com.example.bookapp.controller;
 
 import com.example.bookapp.models.Book;
-import com.example.bookapp.models.Cart;
-import com.example.bookapp.models.CartItem;
 import com.example.bookapp.repo.BookRepository;
 import com.example.bookapp.repo.CartItemRepository;
 import com.example.bookapp.repo.CartRepository;
+import com.example.bookapp.service.CartService;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,20 +18,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpSession;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 import static java.lang.Integer.MAX_VALUE;
-import static java.util.Optional.ofNullable;
+import static java.util.Collections.emptyMap;
 import static org.springframework.data.jpa.domain.Specification.where;
 
 @Controller
-public class GreetingController {
+public class PageController {
     
     @Autowired
     BookRepository bookRepository;
@@ -43,12 +39,14 @@ public class GreetingController {
     @Autowired
     CartRepository cartRepository;
     
-    @GetMapping("/shop")
+    @Autowired
+    CartService cartService;
+    
+    @GetMapping(value = {"", "/", "/shop", "/index"})
     public String shop(@RequestParam(value = "search", defaultValue = "") String search,
                        @RequestParam(value = "sort", defaultValue = "bookId") String sort,
                        @RequestParam(value = "limit", defaultValue = "10") String limitStr,
-                       Model model,
-                       HttpSession session) {
+                       Model model) {
         Page<Book> books;
         Integer limit;
         
@@ -76,47 +74,37 @@ public class GreetingController {
         model.addAttribute("limit", limit.compareTo(MAX_VALUE) == 0 ? "all" : limit.toString());
         model.addAttribute("books", books);
         
-        return "shop";
+        return "index";
     }
     
     @GetMapping("/cart")
     public String cart(Model model, HttpSession session) {
         
-        List<CartItem> cartItemcartItemList = Collections.emptyList();
-        Map<Long, Book> books;
-        Map<Long, Map<String, String>> cartItemsMap = new HashMap<>();
-        Cart cart = null;
-        float totalCost = 0;
         try {
-            cart = cartRepository.findBySessionId(session.getId());
-            cartItemcartItemList = cartItemRepository.findAllByCartIdAndActive(cart.getId(), 1);
-            totalCost = cartRepository.findCartTotalByCartId(cart.getId());
-            books = cartItemcartItemList.stream().map(cartItem -> bookRepository.findByBookId(cartItem.getBookId())).collect(Collectors.toMap(Book::getBookId, book -> book));
-            
-            final Map<Long, Book> finalBooks = books;
-            cartItemcartItemList.forEach(cartItem -> {
-                Optional<Book> optionalBook = ofNullable(finalBooks.get(cartItem.getBookId()));
-                if (optionalBook.isPresent()) {
-                    Book book = optionalBook.get();
-                    Map<String, String> map = new HashMap<>();
-                    map.put("title", book.getTitle());
-                    map.put("authors", book.getAuthors());
-                    map.put("bookId", book.getBookId().toString());
-                    map.put("price", book.getPrice().toString());
-                    map.put("total", String.valueOf(book.getPrice() * cartItem.getQuantity()));
-                    cartItemsMap.put(book.getBookId(), map);
-                }
-            });
+            model.addAttribute("totalCost", 0);
+            model.addAttribute("cartItems", emptyMap());
+            Optional.ofNullable(cartRepository.findBySessionIdAndStatus(session.getId(), 0))
+                    .ifPresent(cart -> {
+                        model.addAttribute("totalCost", cartRepository.findCartTotalByCartId(cart.getId()));
+                        model.addAttribute("cartItems", cartService.getCartItemWithPriceDetails(cart.getId()));
+                    });
         } catch (Exception e) {
             e.printStackTrace();
-            books = new TreeMap<>();
         }
-        
-        model.addAttribute("cart", cart);
-        model.addAttribute("cartItems", cartItemsMap);
-        model.addAttribute("books", books);
-        model.addAttribute("totalCost", totalCost);
         return "cart";
+    }
+    
+    @GetMapping("/success")
+    public String success(Model model, HttpSession session) {
+        Optional.ofNullable(cartRepository.findBySessionIdAndStatus(session.getId(), 0))
+                .ifPresent(cart -> cartService.completeCheckout(cart));
+        
+        return "success";
+    }
+    
+    @GetMapping("/failed")
+    public String failed(Model model) {
+        return "failed";
     }
     
     private Map<String, String> getPageSizeMap() {

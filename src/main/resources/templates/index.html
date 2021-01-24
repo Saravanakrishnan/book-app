@@ -22,7 +22,7 @@
 				text-decoration: none;
 			}
 
-			#sort, #page-size {
+			#sort, #limit {
 				display: inline;
 				width: auto;
 			}
@@ -130,7 +130,7 @@
                                         by <em th:text="${book.authors}"></em>
                                     </p>
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted" th:text="${'$' + book.price}"></small>
+                                        <small class="text-muted" th:text="${'₹' + book.price}"></small>
                                         <div class="btn-group">
                                             <button class="btn btn-sm btn-outline-secondary add-to-cart" th:attr="data-bookId=${book.bookId}">Add to Cart
                                             </button>
