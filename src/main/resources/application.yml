@@ -17,3 +17,5 @@ spring:
 
 STRIPE_PUBLIC_KEY: pk_test_51ICfNaCrEm87RQhZREZdFioXwyeA55DihPMrZOodimebeFbbms2Y4579ygvqzaaWXvCaUhlUiN2xHf3Upq8srqfg00TdByiboQ
 STRIPE_SECRET_KEY: sk_test_51ICfNaCrEm87RQhZA4RNP1mQttH6iDlVc1RA7T90kAF5RcxkrZelGJFGqHiSGtBtw3xl8qabcBk6jRXZ6Io5lMQM00j6SkwZIk
+
+DOMAIN_BASE_URL: http://localhost:8082

@@ -8,6 +8,7 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,7 +26,8 @@ public class PaymentController {
     @Autowired
     CartRepository cartRepository;
     
-    static final String YOUR_DOMAIN = "http://localhost:8082";
+    @Value("DOMAIN_BASE_URL:https://sk-book-app.herokuapp.com/")
+    private String domainBaseUrl;
     
     @Autowired
     private CartService cartService;
@@ -47,8 +49,8 @@ public class PaymentController {
                     SessionCreateParams.builder()
                             .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
                             .setMode(SessionCreateParams.Mode.PAYMENT)
-                            .setSuccessUrl(YOUR_DOMAIN + "/success")
-                            .setCancelUrl(YOUR_DOMAIN + "/cancel")
+                            .setSuccessUrl(domainBaseUrl + "/success")
+                            .setCancelUrl(domainBaseUrl + "/cancel")
                             
                             .addLineItem(
                                     SessionCreateParams.LineItem.builder()
